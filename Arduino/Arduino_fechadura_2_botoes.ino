@@ -7,11 +7,6 @@
 bool atvBotaoIn = false;  // Declara o botao como nao ativado
 bool atvBotaoOut = false; // Declara o botao como nao ativado
 
-// Lista com as UIDs autorizadas
-String AUT_UID[] = {
-  
-};
-
 void setup() {
   Serial.begin(9600);                    // Inicia a serial
   pinMode(BOTAO_IN_PIN, INPUT_PULLUP);   // Configura o pino do botao de enrtada como entrada
