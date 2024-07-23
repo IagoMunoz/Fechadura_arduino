@@ -7,6 +7,11 @@
 bool atvBotaoIn = false;
 bool atvBotaoOut = false;
 
+// Lista com as UIDs autorizadas
+String AUT_UID[] = {
+  
+};
+
 void setup() {
   Serial.begin(9600);   // Inicia a serial
   pinMode(BOTAO_IN_PIN, INPUT_PULLUP);
