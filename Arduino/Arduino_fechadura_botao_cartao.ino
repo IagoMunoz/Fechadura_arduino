@@ -6,8 +6,8 @@
 #define RELE_PIN 2   // Estabelece o pino do rele, possível alterar
 #define BOTAO_PIN 7  // Estabelece o pino do botão, possível alterar
 
-bool atvBotao = false;
-MFRC522 mfrc522(SS_PIN, RST_PIN);
+bool atvBotao = false;              // Declara o botao como nao apertado
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Seta os pinos
 
 // Lista com as UIDs autorizadas
 String AUT_UID[] = {
@@ -17,21 +17,21 @@ String AUT_UID[] = {
 void setup() {
   Serial.begin(9600);   // Inicia a serial
   SPI.begin();      // Inicia o bus SPI
-  mfrc522.PCD_Init();   // Inicia o MFRC522      // Configura o pino do relé como saída
-  pinMode(BOTAO_PIN, INPUT_PULLUP);
-  pinMode(RELE_PIN, OUTPUT);        //Configura o pino do rele como saida
-  digitalWrite(RELE, HIGH); 
+  mfrc522.PCD_Init();   // Inicia o MFRC522      
+  pinMode(BOTAO_PIN, INPUT_PULLUP); // Configura o pino do botao como entrada
+  pinMode(RELE_PIN, OUTPUT);        // Configura o pino do relé como saída
+  digitalWrite(RELE, HIGH);         // Estabelece o estado natural do rele como sem energia
 }
 
 void loop() {
-  mfrc522.PCD_Init();  
+  mfrc522.PCD_Init();                        // Inicia o loop do sistema
 
-  atvBotao = digitalRead(BOTAO_PIN);
+  atvBotao = digitalRead(BOTAO_PIN);         // Verifica se o botao de entrada foi ativado
   if (atvBotao == LOW) {
     Serial.println("  ");
     Serial.print("Botão apertado");
     Serial.println("  ");
-    AtivarRele();
+    AtivarRele();                            // Funçao de ativaçao do rele
   }
 
   // Procura por cartão RFID
