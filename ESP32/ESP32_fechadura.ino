@@ -13,8 +13,9 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Cria instância MFRC522.
 
 // Lista com as UIDs autorizadas
 String AUT_UID[] = {
-  
+
 };
+
 
 void setup() {
   Serial.begin(115200);   // Inicia a serial
