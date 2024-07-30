@@ -1,7 +1,6 @@
-
 #include <SPI.h>
 #include <MFRC522.h>
-  
+
 #define SS_PIN   5
 #define RST_PIN  17
 #define RELE_PIN 16
@@ -12,26 +11,24 @@ bool atvBotao = false;
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Cria instância MFRC522.
 
 // Lista com as UIDs autorizadas
-String AUT_UID[] = {
-
+char AUT_UID[][11] = {
+  // Adicione aqui as UIDs autorizadas, por exemplo: "0A0B0C0D0E"
 };
-
 
 void setup() {
   Serial.begin(115200);   // Inicia a serial
   SPI.begin();      // Inicia o bus SPI
-  mfrc522.PCD_Init();   // Inicia o MFRC522      // Configura o pino do relé como saída
-  pinMode(BOTAO_PIN, INPUT_PULLUP);
+  mfrc522.PCD_Init();   // Inicia o MFRC522
+  pinMode(RELE_PIN, OUTPUT); // Configura o pino do relé como saída
+  pinMode(BOTAO_PIN, INPUT_PULLUP); // Configura o pino do botão como entrada com pull-up
 }
- 
+
 void loop() {
   mfrc522.PCD_Init();  
 
   atvBotao = digitalRead(BOTAO_PIN);
   if (atvBotao == LOW) {
-    Serial.println("  ");
-    Serial.print("Botão apertado");
-    Serial.println("  ");
+    Serial.println("Botão apertado");
     AtivarRele();
   }
 
@@ -39,22 +36,20 @@ void loop() {
   if (mfrc522.PICC_IsNewCardPresent()) {
     // Seleciona o cartão RFID
     if (mfrc522.PICC_ReadCardSerial()) {
-      Serial.println("  ");
-
-      String uidcard = lerUID();
+      char uidcard[11];
+      lerUID(uidcard);
       bool acesso = UIDautorizada(uidcard);
 
       mfrc522.PICC_HaltA();
-      mfrc522.PCD_StopCrypto1();   
+      mfrc522.PCD_StopCrypto1();
 
       if (acesso) {
-        Serial.print("Bem-vindo, usuário autorizado!");
-        Serial.println("  ");
+        Serial.println("Bem-vindo, usuário autorizado!");
         AtivarRele();
       } else {
-        Serial.print("Cartão não autorizado");
+        Serial.println("Cartão não autorizado");
       }
-      mfrc522.PCD_Init();  
+      mfrc522.PCD_Init();
     }
   }
 }
@@ -64,18 +59,18 @@ void AtivarRele() {
   Serial.println("Abrindo porta");
 
   for (int i = 0; i < 8; i++) {  // Loop que repete 8 vezes
-    pinMode(RELE_PIN, OUTPUT);  // Ativa o relé
+    digitalWrite(RELE_PIN, HIGH);  // Ativa o relé
     delay(8);
-    pinMode(RELE_PIN, INPUT); // Desativa o relé
+    digitalWrite(RELE_PIN, LOW); // Desativa o relé
     delay(8); 
   }
   return;
 }
 
 // Verifica se a UID está na lista de UIDs autorizadas
-bool UIDautorizada(String uid) {
-  for (String autorizada : AUT_UID) {
-    if (uid == autorizada) {
+bool UIDautorizada(char* uid) {
+  for (int i = 0; i < sizeof(AUT_UID) / sizeof(AUT_UID[0]); i++) {
+    if (strcmp(uid, AUT_UID[i]) == 0) {
       return true;
     }
   }
@@ -83,18 +78,12 @@ bool UIDautorizada(String uid) {
 }
 
 // Lê a UID e transforma em string
-String lerUID() {
-  String uidcard = "";
+void lerUID(char* uidcard) {
   Serial.print("UID da tag : ");
-  for (byte i = 0; i < mfrc522.uid.size; i++) {
-    uidcard.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
-    uidcard.concat(String(mfrc522.uid.uidByte[i], HEX));
+  for (uint8_t i = 0; i < mfrc522.uid.size; i++) {
+    sprintf(&uidcard[i * 2], "%02X", mfrc522.uid.uidByte[i]);
   }
-  uidcard.toUpperCase();
-  uidcard.trim();
+  uidcard[2 * mfrc522.uid.size] = '\0'; // Adiciona o terminador nulo ao final da string
 
-  Serial.print(uidcard);
-  Serial.println(" ");
-
-  return uidcard;
+  Serial.println(uidcard);
 }
