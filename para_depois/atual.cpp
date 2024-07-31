@@ -14,6 +14,7 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);   // Cria instância MFRC522.
 
 // Lista com as UIDs autorizadas
 String AUT_UID[] PROGMEM= {
+
 };
 
 
@@ -47,6 +48,8 @@ void loop() {
     }
   }
 }
+
+//#########################################################33 abrir e fehcar porta 
 
 void ProcessoPorta(String uidcard) {
   bool acesso = UIDautorizada(uidcard);  
@@ -94,8 +97,8 @@ String lerUID() {
   }
   uidcard.toUpperCase();
   uidcard.trim();
-
   Serial.print(uidcard);
-
   return uidcard;
 }
+//######################################################################################
+
