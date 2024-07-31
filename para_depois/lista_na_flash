@@ -1,0 +1,115 @@
+//rever o usa das funçoes das bibliotecas para otimizaçao
+//inserir no codigo para o processo de registrio offline
+
+
+#include <Preferences.h>
+#include <stdint.h>
+
+Preferences preferences;
+
+// Função para inicializar uma lista vazia
+void initializeList() {
+  preferences.begin("my-app", false); // Namespace "my-app", modo de leitura/escrita
+
+  // Armazena o tamanho inicial da lista como 0
+  preferences.putUInt("list-size", 0);
+
+  preferences.end();
+}
+
+// Função para obter o tamanho atual da lista
+uint8_t getListSize() {
+  preferences.begin("my-app", true); // Namespace "my-app", modo de leitura
+
+  // Recupera o tamanho da lista
+  uint8_t length = preferences.getUInt("list-size", 0);
+
+  preferences.end();
+  return length;
+}
+
+// Função para adicionar um char[11] na lista
+void addToList(const char* item) {
+  preferences.begin("my-app", false); // Namespace "my-app", modo de leitura/escrita
+
+  // Recupera o tamanho atual da lista
+  uint8_t length = getListSize();
+
+  // Armazena o novo item na posição correspondente
+  String key = "list-" + String(length);
+  preferences.putString(key.c_str(), item);
+
+  // Incrementa e armazena o novo tamanho da lista
+  preferences.putUInt("list-size", length + 1);
+
+  preferences.end();
+}
+
+// Função para recuperar e remover o item na posição especificada
+String getAndRemoveItem(uint8_t index) {
+  preferences.begin("my-app", false); // Namespace "my-app", modo de leitura/escrita
+
+  // Recupera o item na posição especificada
+  String item = preferences.getString(("list-" + String(index)).c_str(), "");
+
+  // Remove o item da lista
+  preferences.remove(("list-" + String(index)).c_str());
+
+  preferences.end();
+  return item;
+}
+
+// Função para esvaziar a lista
+void clearList() {
+  preferences.begin("my-app", false); // Namespace "my-app", modo de leitura/escrita
+
+  // Recupera o tamanho atual da lista
+  uint8_t length = getListSize();
+
+  // Remove todos os itens da lista
+  for (uint8_t i = 0; i < length; i++) {
+    preferences.remove(("list-" + String(i)).c_str());
+  }
+
+  // Redefine o tamanho da lista para 0
+  preferences.putUInt("list-size", 0);
+
+  preferences.end();
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  // Inicializa a lista vazia na memória
+  initializeList();
+
+  // Adiciona alguns itens à lista para teste
+  addToList("abcdefghijk");
+  addToList("lmnopqrstuv");
+  addToList("wxyzabcdef");
+
+  Serial.print("Tamanho inicial da lista: ");
+  Serial.println(getListSize());
+}
+
+void loop() {
+  // Recupera o comprimento atual da lista
+  uint8_t listSize = getListSize();
+
+  // Itera do último valor para o primeiro
+  for (int i = listSize - 1; i >= 0; i--) {
+    String item = getAndRemoveItem(i);
+    Serial.print("Item removido: ");
+    Serial.println(item);
+  }
+
+  // Esvazia a lista
+  clearList();
+
+  // Verifica se a lista foi esvaziada
+  Serial.print("Tamanho da lista após esvaziar: ");
+  Serial.println(getListSize());
+
+  // Aguarda um tempo antes de repetir o loop
+  delay(10000); // Aguarda 10 segundos
+}
