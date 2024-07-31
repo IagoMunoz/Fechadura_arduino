@@ -1,6 +1,3 @@
-//atualizar isso aqui depois para usar ao maximo char 11 e byte/uint8_t
-//tentar reduzir a importaçao de funçao das bibliotecaas
-
 
 #include <SPI.h>
 #include <MFRC522.h>
@@ -11,12 +8,12 @@
 #define BOTAO_PIN 25
 
 bool atvBotao = false;
+String pula PROGMEM = " ";
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Cria instância MFRC522.
 
 // Lista com as UIDs autorizadas
-String AUT_UID[] = {
-
+String AUT_UID[] PROGMEM= {
 };
 
 
@@ -32,9 +29,8 @@ void loop() {
 
   atvBotao = digitalRead(BOTAO_PIN);
   if (atvBotao == LOW) {
-    Serial.println("  ");
+    Serial.println(pula);
     Serial.print("Botão apertado");
-    Serial.println("  ");
     AtivarRele();
   }
 
@@ -42,31 +38,33 @@ void loop() {
   if (mfrc522.PICC_IsNewCardPresent()) {
     // Seleciona o cartão RFID
     if (mfrc522.PICC_ReadCardSerial()) {
-      Serial.println("  ");
+      Serial.println(pula);
 
       String uidcard = lerUID();
-      bool acesso = UIDautorizada(uidcard);
-
-      mfrc522.PICC_HaltA();
-      mfrc522.PCD_StopCrypto1();   
-
-      if (acesso) {
-        Serial.print("Bem-vindo, usuário autorizado!");
-        Serial.println("  ");
-        AtivarRele();
-      } else {
-        Serial.print("Cartão não autorizado");
-      }
+      ProcessoPorta(uidcard);
+      
       mfrc522.PCD_Init();  
     }
   }
 }
 
-// Função de ativação do relé
-void AtivarRele() {
-  Serial.println("Abrindo porta");
+void ProcessoPorta(String uidcard) {
+  bool acesso = UIDautorizada(uidcard);  
+  if (acesso) {
+    Serial.println(pula);
+    Serial.print("Bem-vindo, usuário autorizado!");
+    AtivarRele();
+  } else {
+    Serial.println(pula);
+    Serial.print("Cartão não autorizado");
+  }
+  return;
+}
 
-  for (int i = 0; i < 8; i++) {  // Loop que repete 8 vezes
+void AtivarRele() {
+  Serial.println(pula);
+  Serial.print("Abrindo porta");
+  for (byte i = 0; i < 8; i++) {  // Loop que repete 8 vezes
     pinMode(RELE_PIN, OUTPUT);  // Ativa o relé
     delay(8);
     pinMode(RELE_PIN, INPUT); // Desativa o relé
@@ -88,6 +86,7 @@ bool UIDautorizada(String uid) {
 // Lê a UID e transforma em string
 String lerUID() {
   String uidcard = "";
+  Serial.println(pula);
   Serial.print("UID da tag : ");
   for (byte i = 0; i < mfrc522.uid.size; i++) {
     uidcard.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
@@ -97,7 +96,6 @@ String lerUID() {
   uidcard.trim();
 
   Serial.print(uidcard);
-  Serial.println(" ");
 
   return uidcard;
 }
